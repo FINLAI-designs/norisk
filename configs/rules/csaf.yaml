@@ -1,0 +1,31 @@
+# Sprint S2a — Regeln fuer csaf_advisor.
+
+rules:
+  - id: csaf_active_advisory_match
+    description: >
+      Hersteller-Advisory passt zu installierter Software (Techstack-Match).
+      Quick-Win wenn Patch verfuegbar und Single-Asset; sonst Mittel.
+    match:
+      tool: csaf_advisor
+      finding_type: active_advisory_match
+      min_severity: medium
+    classifier_hint:
+      asset_count: 1
+      action_keywords:
+        - update
+        - patch
+
+  - id: csaf_critical_no_fix_yet
+    description: >
+      CRITICAL-Advisory ohne verfuegbaren Patch — Anti-Pattern aus
+      AI_TODO 4.5 (CRITICAL != Quick-Win wenn keine Mitigation existiert).
+      Klassifikation: Mittel (Workaround pruefen) bis Lang (Architektur).
+    match:
+      tool: csaf_advisor
+      finding_type: critical_no_fix_available
+      min_severity: high
+    classifier_hint:
+      asset_count: 5
+      action_keywords:
+        - migriere
+        - etabliere

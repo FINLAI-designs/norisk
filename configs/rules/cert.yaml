@@ -1,0 +1,33 @@
+# Sprint S2a — Regeln fuer cert_monitor.
+# Patrick-Tonalitaet: kurz, aktionsfokussiert (vgl. Storytelling-S1a-Outputs).
+
+rules:
+  - id: cert_expiring_soon
+    description: >
+      TLS-Zertifikat laeuft in den naechsten 90 Tagen ab. Quick-Win-Kandidat:
+      einzelnes Asset, idempotente Aktion (renew), keine Architektur-Aenderung.
+    match:
+      tool: cert_monitor
+      finding_type: cert_expiring
+      min_severity: low
+    classifier_hint:
+      asset_count: 1
+      action_keywords:
+        - renew
+        - rotate
+
+  - id: cert_already_expired
+    description: >
+      TLS-Zertifikat ist bereits abgelaufen. Akut + Single-Asset =
+      Quick-Win, weil sofortige Mitigation moeglich ist (auch wenn
+      die Severity hier formal CRITICAL ist).
+    match:
+      tool: cert_monitor
+      finding_type: cert_expired
+      min_severity: high
+    classifier_hint:
+      asset_count: 1
+      action_keywords:
+        - renew
+        - rotate
+        - update

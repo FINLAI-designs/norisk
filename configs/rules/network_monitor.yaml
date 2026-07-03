@@ -1,0 +1,98 @@
+# T-075 E — Regeln fuer network_monitor Findings (Netzwerk-Anomalien).
+#
+# Hintergrund: T-075 D hat die anomaly_detector-Logik produktiv gemacht
+# (Volume-Spike / Off-Hours / Single-IP / DNS-Tunneling aktiv; Unknown-Path /
+# Game-CDN als Mechanik). T-075 E verbindet die Anomalien mit dem mainpage-
+# KI-Todo-Layer — eine Regel pro finding_type (aus AnomalyType abgeleitet,
+# siehe tools/network_monitor/application/storytelling_adapter.py).
+#
+# WICHTIG: tool = "network_monitor" (NICHT "network_scanner" → network.yaml).
+
+rules:
+  - id: network_volume_anomaly
+    description: >
+      Volume-Spike: >1 GB Upload pro Prozess in 1h. Moeglicher Daten-Abfluss
+      oder Bulk-Upload. Quick-Win via Prozess-Check/-Termination.
+    match:
+      tool: network_monitor
+      finding_type: volume_anomaly
+      min_severity: high
+    classifier_hint:
+      asset_count: 1
+      action_keywords:
+        - beenden
+        - blockieren
+        - pruefen
+
+  - id: network_single_ip_exfil
+    description: >
+      >10 GB an EINE externe IP in 24h — typisches Exfiltrations-Muster.
+      Quick-Win: IP in der Firewall blockieren, Prozess untersuchen.
+    match:
+      tool: network_monitor
+      finding_type: single_ip_exfil
+      min_severity: high
+    classifier_hint:
+      asset_count: 1
+      action_keywords:
+        - blockieren
+        - untersuchen
+
+  - id: network_unknown_process
+    description: >
+      Prozess aus %TEMP%/%APPDATA% mit >10 MB Outbound — verdaechtig
+      (Schadsoftware startet oft aus Temp-Verzeichnissen). Quick-Win:
+      Prozess pruefen/beenden, Viren-Scan.
+    match:
+      tool: network_monitor
+      finding_type: unknown_process
+      min_severity: high
+    classifier_hint:
+      asset_count: 1
+      action_keywords:
+        - beenden
+        - untersuchen
+        - scannen
+
+  - id: network_dns_tunneling
+    description: >
+      DNS-Query-Rate >1000/Min pro Prozess — moegliches DNS-Tunneling oder
+      DGA-Malware. Untersuchung der abgefragten Domains erforderlich.
+    match:
+      tool: network_monitor
+      finding_type: dns_tunneling
+      min_severity: high
+    classifier_hint:
+      asset_count: 1
+      action_keywords:
+        - untersuchen
+        - isolieren
+
+  - id: network_off_hours
+    description: >
+      >100 MB Outbound pro Prozess in den Nacht-Stunden (22-07 Uhr).
+      Erklaerungsbeduerftig — legitimes Backup/Sync oder unerwuenschte
+      Hintergrund-Aktivitaet. Mittel-Aufwand.
+    match:
+      tool: network_monitor
+      finding_type: off_hours
+      min_severity: medium
+    classifier_hint:
+      asset_count: 1
+      action_keywords:
+        - deaktiviere
+        - pruefen
+
+  - id: network_game_download
+    description: >
+      Remote-IP matcht eine Game-/Download-CDN-Liste. Meist harmlos
+      (Spiele-Update), auf Arbeitsgeraeten ggf. unerwuenscht. Low-Prio.
+    match:
+      tool: network_monitor
+      finding_type: game_download
+      min_severity: low
+    classifier_hint:
+      asset_count: 1
+      action_keywords:
+        - pruefen
+        - entfernen

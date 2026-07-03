@@ -1,0 +1,31 @@
+# Sprint S2a — Regeln fuer dependency_auditor.
+
+rules:
+  - id: dep_vulnerable_package
+    description: >
+      Bekannte CVE in einer gepinnten Dependency. Standard-Quick-Win:
+      requirements.txt anpassen + pip install (3 Min).
+    match:
+      tool: dependency_auditor
+      finding_type: vulnerable_package
+      min_severity: low
+    classifier_hint:
+      asset_count: 1
+      action_keywords:
+        - update
+        - patch
+
+  - id: dep_unpinned_dependency
+    description: >
+      Dependency ohne exakte Version (>= statt ==) — Reproduzierbarkeit
+      gefaehrdet. Mittel: kann ueber mehrere Repos hinweg laufen,
+      Test-Lauf erforderlich.
+    match:
+      tool: dependency_auditor
+      finding_type: unpinned_dependency
+      min_severity: low
+    classifier_hint:
+      asset_count: 8
+      action_keywords:
+        - rolle aus
+        - automatisiere

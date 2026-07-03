@@ -1,0 +1,278 @@
+# ---------------------------------------------------------------------------
+# Projekt-Metadaten (PEP 621)
+# ---------------------------------------------------------------------------
+# Bewusst OHNE [build-system]: NoRisk wird nicht als pip-Paket installiert,
+# sondern via apps/norisk_app.py gestartet bzw. per PyInstaller (build.py)
+# gebaut. Ein [build-system] wuerde setuptools' Flat-Layout-Auto-Discovery
+# ueber core/, tools/, apps/ ausloesen (Fehler "multiple top-level packages").
+# Diese Tabelle liefert nur Metadaten (Name/Version/Lizenz) fuer den OSS-Cut
+# (T-388 / ADR-033 F7). Lizenz: AGPL-3.0-or-later (SPDX-Ausdruck), Volltext in
+# LICENSE (Patrick-Entscheid 2026-06-23; Fresh-Export nach FINLAI-designs/norisk).
+[project]
+name = "norisk"
+version = "1.0.0"
+description = "NoRisk by FINLAI — lokale Cybersecurity-Suite fuer KMU (Single-Tenant Desktop-App, 100% lokal)"
+readme = "README.md"
+requires-python = ">=3.12"
+authors = [{ name = "Patrick Riederich", email = "office@financial-analytics.eu" }]
+license = "AGPL-3.0-or-later"
+license-files = ["LICENSE"]
+
+[tool.ruff]
+target-version = "py312"
+line-length = 88
+src = ["tools", "core"]
+# Git-Worktrees + Vibe-Skill-Spiegel sind kein First-Class-Quellcode -> aus dem
+# Lint-/Komplexitaets-Scope (Compliance-by-Code P0, 2026-06-15).
+extend-exclude = [".worktrees", ".vibe"]
+
+[tool.ruff.lint]
+select = [
+    "E",    # pycodestyle errors
+    "W",    # pycodestyle warnings
+    "F",    # pyflakes
+    "I",    # isort
+    "B",    # flake8-bugbear
+    "UP",   # pyupgrade
+    "SIM",  # flake8-simplify
+    "S",    # flake8-bandit (security)
+]
+ignore = [
+    "E501",   # Zeile zu lang (ruff formatiert nicht)
+    "S101",   # assert in Tests OK
+    "B008",   # Funktionsaufruf in Default
+    "SIM108", # Ternary — manchmal unleserlich
+    "S110",   # try-except-pass: intentional fail-safe pattern
+    "S112",   # try-except-continue: intentional
+    "SIM105", # contextlib.suppress: existing pattern OK
+    "SIM102", # collapsible-if: sometimes more readable expanded
+    "S603",   # subprocess without shell: input is hardcoded, not user-controlled
+    "S607",   # partial executable path: wmic/powershell are Windows-system tools
+    "S105",   # hardcoded-password: this is a default admin password, documented
+    "B007",   # unused loop variable: intentional _ convention not always used
+    "SIM109", # compare-with-tuple: sometimes more explicit with multiple comparisons
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["S", "B"]
+# Tests: Security + Bugbear lockerer
+
+[tool.ruff.lint.isort]
+known-first-party = ["core", "tools"]
+
+# McCabe-Schwelle fuer C901. C901 ist bewusst NICHT in [tool.ruff.lint].select,
+# damit 'ruff check' gatebar bleibt; die CI faehrt C901 als separaten Audit-Schritt
+# (harness.yml: 'ruff C901, warn'). Bestand > 10 wird ueber Sprints gesenkt, dann
+# in select aufgenommen (Compliance-by-Code P0, 2026-06-15).
+[tool.ruff.lint.mccabe]
+max-complexity = 10
+
+
+[tool.mypy]
+python_version = "3.12"
+warn_return_any = true
+warn_unused_configs = true
+ignore_missing_imports = true
+# PySide6 hat keine Stubs — ignorieren
+
+# Strenger für eigenen Code:
+[[tool.mypy.overrides]]
+module = ["core.*", "tools.*"]
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+
+# Lockerer für Tests:
+[[tool.mypy.overrides]]
+module = ["tests.*"]
+disallow_untyped_defs = false
+
+# GUI-Adapter-Schicht: PySide6-Event-Handler brauchen keine strikten Annotations
+# (Qt-Override-Signaturen variieren je nach Qt-Version — keine Stubs vorhanden)
+[[tool.mypy.overrides]]
+module = [
+    "core.main_window",
+    "core.sidebar",
+    "core.fonts",
+    "core.auth.login_window",
+    "core.auth.admin_panel",
+    "core.legal.agreement_dialog",
+    "tools.*.gui",
+    "tools.*.gui.*",
+    "tools.*.gui.*.*",
+]
+disallow_untyped_defs = false
+disallow_incomplete_defs = false
+
+
+[tool.bandit]
+targets = ["tools", "core"]
+exclude_dirs = ["tests"]
+# Skips spiegeln die ruff-Konfig oben — dieselben "intentional"-Patterns
+# werden vom pre-commit-Hook (.githooks/pre-commit) sonst doppelt geflaggt.
+skips = [
+    "B101",  # assert (= ruff S101) — assert in run_first_run_wizard etc.
+    "B105",  # hardcoded password (= ruff S105) — Material-Icon-Names
+             #   ("password", "lock_reset") sind Icon-Identifier, keine Credentials
+    "B110",  # try-except-pass (= ruff S110) — intentional fail-safe pattern
+    "B112",  # try-except-continue (= ruff S112) — intentional
+    "B311",  # random für nicht-krypto OK
+    "B404",  # subprocess in Robotic OK
+    "B603",  # subprocess in Robotic OK
+    "B607",  # subprocess partial path (= ruff S607) -- "ollama" / Windows-System-Tools
+]
+severity = "medium"
+confidence = "medium"
+
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = [
+    "--tb=short",
+    "--strict-markers",
+    "--no-header",
+]
+markers = [
+    "slow: langsame Tests (deselect mit -m 'not slow')",
+    "gui: Tests die PySide6 brauchen",
+    "integration: Integration Tests",
+]
+
+
+[tool.coverage.run]
+source = ["tools", "core"]
+omit = [
+    "*/gui/*",      # GUI nicht messen
+    "*/tests/*",
+    "*/__init__.py",
+]
+
+[tool.coverage.report]
+fail_under = 60
+show_missing = true
+skip_empty = true
+
+
+# ---------------------------------------------------------------------------
+# import-linter — Architektur-Contract-Enforcement (T-026 RUN2-LINTER)
+# ---------------------------------------------------------------------------
+#
+# Erzwingt die hexagonale Architektur (siehe ARCHITECTURE.md):
+#   domain → keine Imports nach aussen
+#   application → darf domain importieren
+#   data → darf domain + application importieren
+#   gui → darf application + domain importieren, NICHT data
+#
+# Aufruf lokal: ``lint-imports --config pyproject.toml``
+# Aufruf via pre-commit: siehe .githooks/pre-commit
+[tool.importlinter]
+root_packages = ["core", "tools", "apps"]
+include_external_packages = false
+# T-312/ADR-017: Type-only-Importe (if TYPE_CHECKING) sind keine Laufzeit-
+# Dependency -> aus dem Graph ausschliessen. Gilt fuer alle Contracts; bestaetigt
+# 4/4 Hexagonal weiterhin KEPT.
+exclude_type_checking_imports = true
+
+# Contract 1 — Hexagonale Schicht-Hierarchie pro Tool.
+# ``allow_indirect_imports = true`` erlaubt indirekte Pfade
+# (gui→application→data ist OK, NUR direkter gui→data ist verboten).
+# Wildcards (``*``) matchen alle 20 Tools.
+[[tool.importlinter.contracts]]
+name = "Hexagonal: gui darf data nicht direkt importieren"
+type = "forbidden"
+source_modules = ["tools.*.gui"]
+forbidden_modules = ["tools.*.data"]
+allow_indirect_imports = true
+
+# Contract 2 — Domain ist der innere Kern: keine Imports aus
+# application/data/gui erlaubt.
+[[tool.importlinter.contracts]]
+name = "Hexagonal: domain darf nichts aus aeusseren Schichten importieren"
+type = "forbidden"
+source_modules = ["tools.*.domain"]
+forbidden_modules = [
+    "tools.*.application",
+    "tools.*.data",
+    "tools.*.gui",
+]
+allow_indirect_imports = true
+
+# Contract 3 — application darf nicht in die GUI greifen.
+[[tool.importlinter.contracts]]
+name = "Hexagonal: application darf nicht in gui greifen"
+type = "forbidden"
+source_modules = ["tools.*.application"]
+forbidden_modules = ["tools.*.gui"]
+allow_indirect_imports = true
+
+# Contract 4 — data darf nicht in application/gui greifen (Ports gehen
+# zur application-Schicht, nicht umgekehrt). Ausnahme: ThreatChecker
+# in network_monitor/application ist ein Domain-Service (reine
+# in-memory-Logik, kein Aussenstand) — wird vom Worker importiert.
+# Pragmatisch: ignoriert, kein Refactoring noetig fuer T-026.
+[[tool.importlinter.contracts]]
+name = "Hexagonal: data darf nicht in application/gui greifen"
+type = "forbidden"
+source_modules = ["tools.*.data"]
+forbidden_modules = [
+    "tools.*.application",
+    "tools.*.gui",
+]
+allow_indirect_imports = true
+ignore_imports = [
+    "tools.network_monitor.data.monitor_worker -> tools.network_monitor.application.threat_checker",
+]
+
+# Contract 4c — ADR-038 / L-024: customer_audit konsumiert security_scoring
+# AUSSCHLIESSLICH ueber die core-Ports (core.scan_prefill / core.security_subject),
+# nie direkt. ``source_modules = ["tools.customer_audit"]`` matcht das ganze
+# Paket INKLUSIVE ``tool.py`` — schliesst damit die L-024-Luecke (die generischen
+# gui/application/data/domain-Contracts erfassen ``tool.py`` NICHT). Der legitime
+# Zugriff laeuft INDIREKT ueber die core-Resolver (lazy), daher
+# ``allow_indirect_imports = true`` — nur ein DIREKTER tool->tool-Import bricht.
+[[tool.importlinter.contracts]]
+name = "ADR-038: customer_audit greift nicht direkt auf security_scoring"
+type = "forbidden"
+source_modules = ["tools.customer_audit"]
+forbidden_modules = ["tools.security_scoring"]
+allow_indirect_imports = true
+
+# Contract 5 — Makro-Schichtung: core < tools < apps (T-312 / ADR-017).
+# Die innere Schicht darf die aeussere nicht importieren. ``ignore_imports``
+# friert den Ist-Stand als Baseline ein (import-linter hat keine native
+# Baseline-Generierung) — jeder NEUE core->tools/apps- bzw. tools->apps-Import
+# bricht den Contract (= Ratchet). Alle Eintraege sind funktions-lokale Lazy-
+# Importe (``# noqa: PLC0415``, bewusste Zyklus-Brecher ohne Lade-Zeit-Kopplung);
+# Type-only-Importe sind global via exclude_type_checking_imports bereits raus.
+# Die Baseline schrumpft, wenn ein Eintrag strukturell aufgeloest wird; sie
+# waechst nur ueber einen bewussten, im PR-Diff sichtbaren Eintrag.
+[[tool.importlinter.contracts]]
+name = "Makro-Schichtung: core < tools < apps"
+type = "layers"
+layers = ["apps", "tools", "core"]
+ignore_imports = [
+    # tools -> apps (lazy)
+    "tools.mainpage.gui.quickstart_widget -> apps.app_config",
+    "tools.einstellungen.tool -> apps.app_config",
+    "tools.einstellungen.gui.links_tab -> apps.app_config",
+    # core -> apps (lazy)
+    "core.first_run_wizard.pages.admin_setup_page -> apps.app_config",
+    "core.sidebar_links -> apps.app_config",
+    "core.help.help_dialog -> apps.app_config",
+    # core -> tools (lazy)
+    "core.storytelling.ki_todo_emitter -> tools.mainpage.application.journal_service",
+    "core.storytelling.ki_todo_emitter -> tools.mainpage.application.ki_todo_service",
+    "core.storytelling.ki_todo_emitter -> tools.mainpage.application.task_service",
+    "core.storytelling.ki_todo_emitter -> tools.mainpage.data.mainpage_repository",
+    "core.patch_cve_matcher -> tools.cyber_dashboard.application.nvd_service",
+    "core.security_subject.resolver -> tools.security_scoring.application.subject_store",
+    "core.security_subject.resolver -> tools.customer_audit.application.usage_signals",
+    "core.security_subject.resolver -> tools.supply_chain_monitor.data.customer_avv_repository",
+    "core.security_subject.resolver -> tools.supply_chain_monitor.data.subprocessor_repository",
+    "core.security_subject.resolver -> tools.norisk_dashboard.data.workflow_progress_repository",
+    "core.scan_prefill.resolver -> tools.security_scoring.application.scan_prefill_provider",
+    "core.hardening_query -> tools.security_scoring.application.hardening_query_adapter",
+    "core.tech_stack.resolver -> tools.security_scoring.application.tech_stack.manage_profiles_use_case",
+]

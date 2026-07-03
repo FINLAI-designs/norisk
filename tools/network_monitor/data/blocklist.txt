@@ -1,0 +1,12 @@
+# Netzwerkmonitor — Lokale Blocklist
+# Eine Regel pro Zeile. IPv4/IPv6 plain oder CIDR.
+# Leer- und Kommentarzeilen (beginnend mit #) werden ignoriert.
+# Kommentar nach einer Regel mit "# Grund" wird als Match-Begründung geführt.
+#
+# Beispiele (auskommentiert — Datei ist absichtlich leer):
+#   10.0.0.0/8            # Privates Netz (Demo)
+#   203.0.113.0/24        # TEST-NET-3 (RFC 5737)
+#   2001:db8::/32         # Dokumentations-IPv6 (RFC 3849)
+#
+# Produktive Einträge werden vom Nutzer oder durch ein künftiges
+# Update-Verfahren (z.B. Abuse-IPDB-Sync) ergänzt.

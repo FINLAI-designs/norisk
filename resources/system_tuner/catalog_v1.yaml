@@ -1,0 +1,181 @@
+# system_tuner Tweak-Katalog (DATEN, nicht Code).
+#
+# Clean-Room aus Microsoft-Primaerquellen (Learn policy-csp-system,
+# Dienst-/Autologger-Doku). KEIN Import von privacy.sexy / WinScript /
+# Sophia-Inhalten (AGPL/GPL). Jeder Eintrag traegt provenance + docs_url +
+# compliance_relevance; Invarianten erzwingt tools/system_tuner/application/
+# catalog_loader.py beim Laden (fail-closed).
+#
+# WICHTIG (R1/R2): compliance_relevance auf Tweak-Ebene beschreibt NUR die
+# UNTERSTUETZUNG einer Massnahme (Art. 32 / Art. 5) — keine Konformitaets-
+# Claims, kein Art. 30 / NIS2 (das gehoert auf das Evidence-Export-Feature).
+catalog_version: "1.0"
+generated_from: "Microsoft Learn policy-csp-system; Windows-Dienst-/Autologger-Doku (2026-06)"
+
+tweaks:
+  - id: "TW-TEL-001"
+    title_de: "Windows-Telemetrie auf Minimum (Erforderlich)"
+    category: "telemetry"
+    risk_tier: "T1_safe"
+    recommend: "standard"
+    rationale_de: >-
+      Setzt die Diagnosedaten-Stufe ueber den dokumentierten Microsoft-Pfad
+      (AllowTelemetry) auf 'Erforderlich (1)'. Reduziert optionale Telemetrie,
+      ohne Update-/Sicherheits-relevante Diagnose zu unterbinden.
+    docs_url: "https://learn.microsoft.com/windows/client-management/mdm/policy-csp-system"
+    edition_caveat: "telemetry_zero_enterprise_only"
+    requires_admin: true
+    requires_reboot: false
+    compliance_relevance:
+      - "Unterstuetzt DSGVO Art. 32 (TOM): reduziert Uebermittlung optionaler Diagnosedaten"
+      - "Unterstuetzt DSGVO Art. 5 Abs. 1 lit. c (Datenminimierung)"
+    provenance:
+      source: "Microsoft Learn — policy-csp-system (AllowTelemetry), 2026-06"
+      derived_from: null
+      license: null
+    change:
+      op: "registry_set"
+      hive: "HKLM"
+      key: "SOFTWARE\\Policies\\Microsoft\\Windows\\DataCollection"
+      value_name: "AllowTelemetry"
+      value_type: "REG_DWORD"
+      desired: 1
+    verify:
+      expect_value: 1
+    revert:
+      kind: "restore_prior"
+
+  - id: "TW-TEL-002"
+    title_de: "DiagTrack-Autologger beim Start deaktivieren"
+    category: "telemetry"
+    risk_tier: "T1_safe"
+    recommend: "strict"
+    rationale_de: >-
+      Deaktiviert den ETW-Autologger 'AutoLogger-Diagtrack-Listener' (Start=0),
+      der beim Boot Telemetrie-Tracing startet. Voll reversibel ueber den
+      gesicherten Vorwert.
+    docs_url: "https://learn.microsoft.com/windows/privacy/configure-windows-diagnostic-data-in-your-organization"
+    requires_admin: true
+    requires_reboot: true
+    compliance_relevance:
+      - "Unterstuetzt DSGVO Art. 5 Abs. 1 lit. c (Datenminimierung)"
+    provenance:
+      source: "Microsoft Learn — Diagnostic Data / Autologger-Doku, 2026-06"
+      derived_from: null
+      license: null
+    change:
+      op: "registry_set"
+      hive: "HKLM"
+      key: "SYSTEM\\CurrentControlSet\\Control\\WMI\\Autologger\\AutoLogger-Diagtrack-Listener"
+      value_name: "Start"
+      value_type: "REG_DWORD"
+      desired: 0
+    verify:
+      expect_value: 0
+    revert:
+      kind: "restore_prior"
+
+  - id: "TW-SVC-001"
+    title_de: "Dienst 'Verbundene Benutzererfahrungen und Telemetrie' auf Manuell"
+    category: "services"
+    risk_tier: "T2_caution"
+    recommend: "standard"
+    rationale_de: >-
+      Setzt den Dienst DiagTrack (Connected User Experiences and Telemetry) auf
+      Starttyp 'Manuell'. Konservativ (nicht 'Deaktiviert'), voll reversibel.
+    docs_url: "https://learn.microsoft.com/windows/privacy/configure-windows-diagnostic-data-in-your-organization"
+    requires_admin: true
+    requires_reboot: false
+    compliance_relevance:
+      - "Unterstuetzt DSGVO Art. 32 (TOM): begrenzt aktive Telemetrie-Sammlung"
+      - "Unterstuetzt DSGVO Art. 5 Abs. 1 lit. c (Datenminimierung)"
+    provenance:
+      source: "Microsoft Dienst-Dokumentation (services.msc / DiagTrack), 2026-06"
+      derived_from: null
+      license: null
+    change:
+      op: "service_startmode"
+      service_name: "DiagTrack"
+      desired_start_mode: "manual"
+    verify:
+      expect_start_mode: "manual"
+    revert:
+      kind: "restore_prior"
+
+  - id: "TW-SVC-002"
+    title_de: "Dienst 'dmwappushservice' (WAP-Push) auf Manuell"
+    category: "services"
+    risk_tier: "T2_caution"
+    recommend: "standard"
+    rationale_de: >-
+      Setzt dmwappushservice (Device Management WAP Push) auf 'Manuell'. Fuer
+      die meisten SMB-Arbeitsplaetze ohne MDM-WAP-Push nicht erforderlich.
+    docs_url: "https://learn.microsoft.com/windows/privacy/manage-connections-from-windows-operating-system-components-to-microsoft-services"
+    requires_admin: true
+    requires_reboot: false
+    compliance_relevance:
+      - "Unterstuetzt DSGVO Art. 5 Abs. 1 lit. c (Datenminimierung)"
+    provenance:
+      source: "Microsoft Dienst-Dokumentation (dmwappushservice), 2026-06"
+      derived_from: null
+      license: null
+    change:
+      op: "service_startmode"
+      service_name: "dmwappushservice"
+      desired_start_mode: "manual"
+    verify:
+      expect_start_mode: "manual"
+    revert:
+      kind: "restore_prior"
+
+  - id: "TW-SVC-003"
+    title_de: "Dienst 'Heruntergeladene Karten-Manager' auf Manuell"
+    category: "services"
+    risk_tier: "T2_caution"
+    recommend: "standard"
+    rationale_de: >-
+      Setzt MapsBroker (Downloaded Maps Manager) auf 'Manuell'. Nur fuer
+      Offline-Karten der Maps-App relevant; auf Arbeitsplaetzen meist ungenutzt.
+    docs_url: "https://learn.microsoft.com/windows/application-management/svchost-service-refactoring"
+    requires_admin: true
+    requires_reboot: false
+    compliance_relevance:
+      - "Unterstuetzt DSGVO Art. 5 Abs. 1 lit. c (Datenminimierung): weniger Hintergrund-Konnektivitaet"
+    provenance:
+      source: "Microsoft Dienst-Dokumentation (MapsBroker), 2026-06"
+      derived_from: null
+      license: null
+    change:
+      op: "service_startmode"
+      service_name: "MapsBroker"
+      desired_start_mode: "manual"
+    verify:
+      expect_start_mode: "manual"
+    revert:
+      kind: "restore_prior"
+
+  - id: "TW-SVC-004"
+    title_de: "Xbox-Dienst 'XblGameSave' deaktivieren"
+    category: "services"
+    risk_tier: "T2_caution"
+    recommend: "strict"
+    rationale_de: >-
+      Deaktiviert XblGameSave (Xbox Live Spielstand). Auf Business-Arbeitsplaetzen
+      ohne Gaming ungenutzt; voll reversibel ueber den gesicherten Starttyp.
+    docs_url: "https://learn.microsoft.com/windows/application-management/svchost-service-refactoring"
+    requires_admin: true
+    requires_reboot: false
+    compliance_relevance:
+      - "Unterstuetzt DSGVO Art. 5 Abs. 1 lit. c (Datenminimierung): weniger ungenutzte Hintergrunddienste"
+    provenance:
+      source: "Microsoft Dienst-Dokumentation (XblGameSave), 2026-06"
+      derived_from: null
+      license: null
+    change:
+      op: "service_startmode"
+      service_name: "XblGameSave"
+      desired_start_mode: "disabled"
+    verify:
+      expect_start_mode: "disabled"
+    revert:
+      kind: "restore_prior"

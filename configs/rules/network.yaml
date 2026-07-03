@@ -1,0 +1,30 @@
+# Sprint S2a — Regeln fuer network_scanner.
+
+rules:
+  - id: network_exposed_admin_port
+    description: >
+      Admin-Port (RDP/SSH/MySQL ...) oeffentlich erreichbar. Quick-Win-
+      Kandidat: Firewall-Regel reicht meist (deaktiviere/block).
+    match:
+      tool: network_scanner
+      finding_type: exposed_admin_port
+      min_severity: medium
+    classifier_hint:
+      asset_count: 1
+      action_keywords:
+        - block
+        - deaktiviere
+
+  - id: network_unsegmented_lan
+    description: >
+      Flaches Netzwerk ohne Segmentierung — Mittelfristige Aufgabe
+      (mehrere Geraete, VLAN-Plan, Wartungsfenster).
+    match:
+      tool: network_scanner
+      finding_type: unsegmented_lan
+      min_severity: medium
+    classifier_hint:
+      asset_count: 12
+      action_keywords:
+        - segment
+        - migriere

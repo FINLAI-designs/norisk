@@ -1,0 +1,30 @@
+# T-072 — Regeln fuer system_scanner Hardening-Checks (SH-001..SH-010).
+#
+# Hintergrund: das Windows-Hardening-Modul scannt 10 Konfigurationen
+# (Firewall / Defender / RDP / Auto-Update / SMBv1 / UAC / Bitlocker etc.)
+# und erzeugt pro Fehlschlag einen `HardeningCheck(passed=False)`.
+# Der Storytelling-Adapter (system_scanner.application.storytelling_adapter)
+# konvertiert sie zu einer einzigen finding_type-Klasse
+# `hardening_check_failed`, mit `check_id` als evidence_id.
+#
+# Eine einzige Regel reicht — Urgency leitet sich aus der Severity ab.
+# Die Empfehlungs-Klassifikation kann spaeter pro check_id verfeinert
+# werden, wenn Patrick separate yaml-Regeln pro SH-Nummer haben will.
+
+rules:
+  - id: hardening_check_failed
+    description: >
+      Ein Windows-Hardening-Check (SH-001..SH-010) ist nicht erfuellt.
+      Defender / Firewall / BitLocker etc. sind grundlegende Schutz-
+      mechanismen — Fehlkonfigurationen sind Quick-Wins, oft per
+      einem GUI-Klick reparierbar.
+    match:
+      tool: system_scanner
+      finding_type: hardening_check_failed
+      min_severity: medium
+    classifier_hint:
+      asset_count: 1
+      action_keywords:
+        - aktiviere
+        - einschalten
+        - deaktiviere

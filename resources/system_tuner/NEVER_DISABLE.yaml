@@ -1,0 +1,52 @@
+# NEVER_DISABLE — harte Sperrliste (mitgelieferter Spiegel der Domain-Konstante).
+#
+# Vertrag: Diese Datei darf die kanonische Domain-Konstante
+# tools/system_tuner/domain/never_disable.py NUR ERWEITERN, nie verkleinern.
+# Der Test test_system_tuner_never_disable.py erzwingt:
+#   set(domain-Konstante) <= set(diese YAML)   (kein Schrumpfen / kein Drift)
+#
+# Phase 2 (R3): diese Datei wird zusaetzlich Ed25519-signiert; der elevated
+# Apply-Prozess laedt sie neu und prueft jede Op pro Schreibvorgang dagegen.
+#
+# Begruendung der Auswahl: Disabling bricht Windows Update, Defender,
+# BitLocker/TLS-Zertpruefung, COM/Event, Servicing, Gruppenrichtlinien,
+# Firewall oder die Netzwerk-Basis.
+version: "1.0"
+
+services:
+  # Defender-Stack
+  - windefend
+  - sense
+  - wdnissvc
+  # Windows Update + Servicing
+  - wuauserv
+  - bits
+  - usosvc
+  - waasmedicsvc
+  - trustedinstaller
+  - msiserver
+  # AppX-/Lizenz-Laufzeit
+  - appxsvc
+  - clipsvc
+  # Krypto / Zertifikate / BitLocker
+  - cryptsvc
+  # COM / System-Event
+  - rpcss
+  - dcomlaunch
+  - sens
+  # Gruppenrichtlinien
+  - gpsvc
+  # Logging / Scheduler
+  - eventlog
+  - schedule
+  # Firewall / Security Center
+  - mpssvc
+  - wscsvc
+  # Netzwerk-Basis
+  - dnscache
+  - nlasvc
+  - lanmanworkstation
+
+endpoints:
+  - settings-win.data.microsoft.com
+  - login.live.com

@@ -1,0 +1,37 @@
+# finLai — Zeilenende-Normalisierung
+# LF im Repo, plattformabhängig beim Checkout (Windows: CRLF, Unix: LF)
+* text=auto eol=lf
+
+# Python-Quellcode immer LF
+*.py text eol=lf
+
+# Konfiguration immer LF
+*.toml text eol=lf
+*.yaml text eol=lf
+*.yml text eol=lf
+*.json text eol=lf
+*.cfg text eol=lf
+*.ini text eol=lf
+
+# Dokumentation immer LF
+*.md text eol=lf
+*.rst text eol=lf
+*.txt text eol=lf
+
+# Batch/CMD auf Windows mit CRLF
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# Binärdateien — nicht anfassen
+*.png binary
+*.jpg binary
+*.ttf binary
+*.woff binary
+*.woff2 binary
+*.db binary
+*.sqlite binary
+*.enc binary
+*.docx binary
+*.xlsx binary
+*.pdf binary
+*.xsd binary

@@ -1,0 +1,88 @@
+# NoRisk by FINLAI — Cybersecurity (Open-Source-Desktop-App)
+#
+# Self-contained Dependency-Manifest der veroeffentlichten Single-Tenant-App
+# (T-388 / ADR-033 F7). Bewusst OHNE die Fleet-Hub-Server-Deps (fastapi/
+# uvicorn/starlette/sqlalchemy/alembic/psycopg/PyJWT) — die proprietaere
+# Multi-Tenant-Konsole lebt in einem eigenen Repo und installiert
+# deploy/hub/requirements-hub.txt. Die App importiert keine dieser Server-Deps.
+#
+# Versionen exakt gepinnt (==), abgeglichen mit der Projekt-venv (T-356,
+# Security-Policy: keine Ranges; sonst kann der Dependency-Auditor nicht gegen
+# OSV abgleichen). Aktualisierung nur bewusst: Version in der venv heben, dann
+# Pin hier nachziehen.
+#
+# Install:
+#   python -m venv .venv
+#   .venv/Scripts/python -m pip install -r requirements/norisk.txt
+
+# === GUI-Framework ===
+# PySide6 fest gepinnt (Migration C-3 Anaconda->Standalone, 2026-04-27): bei
+# Re-Install zog pip sonst die neueste Version -> DLL-Hijacking unter Anaconda.
+PySide6==6.11.0
+qt-material-icons==0.5.0
+
+# === Charting (UI-Visualisierungs-Sprint T-203) ===
+# PyQtGraph (LGPL, pure Python, nutzt vorhandenes NumPy). QtCharts wurde
+# verworfen (GPL/commercial inkompatibel).
+pyqtgraph==0.13.7
+
+# === Basis ===
+numpy==1.26.4                  # transitive fuer openpyxl-/pandas-Tools (<2 Pflicht)
+requests==2.33.1
+httpx==0.27.2                  # HTTP-Client (Ollama-Provider, Web-Fetch, ...)
+ollama==0.6.1                  # lokales LLM (kein Cloud-LLM, "100% lokal")
+cryptography==45.0.7
+bcrypt==5.0.0                  # core/auth Passwort-Hashing
+sqlcipher3==0.6.2
+apsw==3.53.0.0                 # Fallback-SQLCipher-Bindung
+packaging==26.2
+psutil==6.1.1
+pydantic==2.9.2
+pydantic-settings==2.4.0       # core/settings.py — Env-Var-Overrides + Validation (T-023)
+
+# === Windows-Plattform (sys_platform-Marker; Linux/macOS ueberspringt) ===
+# pywin32: DPAPI-KEK in core/database/key_manager.py (ADR-007) + Task-Scheduler-COM.
+pywin32==311; sys_platform == "win32"
+# pywintrace: ETW-Kernel-Network-Provider fuer den elevated Collector
+# (apps/collector_main.py, T-075 / T-340 F-C). Reines Python (ctypes) ->
+# ueberlebt PyInstaller-Freezing. WARNUNG: upstream unmaintained (0.2.0) =
+# Single Point of Failure; bei kuenftigem CVE auf vendored Fork ausweichen.
+pywintrace==0.2.0; sys_platform == "win32"
+
+# === Datei-/Dokument-Verarbeitung ===
+pypdf==6.10.2                  # PDF-Text-Extraktion (pdf_risk_scanner)
+python-docx==1.2.0             # DOCX-Reports
+openpyxl==3.1.5                # XLSX-Export (api_security u.a.)
+reportlab==4.4.10              # PDF-Generierung (NoRisk Reports)
+defusedxml==0.7.1              # Sichere XML-Parser (gegen XXE)
+lxml==6.1.0                    # XSD-Parsing
+
+# === Security/Validator (core/security) ===
+magika==1.0.2                  # AI-Dateityp-Erkennung
+oletools==0.60.2               # olevba + msodde (Makro/DDE-Detection)
+yara-python==4.5.4             # YARA-Pattern-Scanner (Document Scanner, T-094)
+dnspython==2.8.0               # DNS-MX-Lookup (Datensouveraenitaets-Audit, T-097b)
+jsonschema==4.26.0
+ijson==3.5.0                   # Streaming-JSON
+ftfy==6.3.1                    # Unicode-Normalisierung
+extract-msg==0.55.0            # Outlook .msg-Parsing (email_scanner)
+feedparser==6.0.12             # RSS/Atom-Feeds (consumer_feeds)
+chardet==5.2.0                 # Zeichensatz-Erkennung
+beautifulsoup4==4.13.5         # HTML-Parsing
+
+# === NoRisk-spezifisch ===
+ddgs==9.14.1                   # DuckDuckGo-Search (CVE-/OSINT-Tools)
+
+# === tools/handbuch_assistent (Optional, lazy import) ===
+# Fehlt eine, laeuft die App weiter (nur RAG-Index deaktiviert).
+scikit-learn==1.8.0            # TF-IDF + Cosine
+watchdog==6.0.0                # docs/-Auto-Reload-Watcher
+
+# === Build & Dev Tools ===
+bandit==1.9.4
+import-linter==2.11             # Architektur-Contract-Enforcement (T-026)
+pyinstaller==6.20.0
+pyinstaller-hooks-contrib==2026.4
+pytest==9.0.3
+pytest-qt==4.5.0
+ruff==0.15.12

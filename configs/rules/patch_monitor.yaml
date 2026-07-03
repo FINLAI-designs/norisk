@@ -1,0 +1,89 @@
+# T-073 — Regeln fuer patch_monitor Findings (Update-Empfehlungen, EOL).
+#
+# Hintergrund: T-067 + T-068 haben die patch-internen Recommendation-
+# Klassen produktiv gemacht (update_urgent / eol_no_patch / workaround_
+# available / etc.). T-073 verbindet diese Klassen mit dem mainpage-
+# KI-Todo-Layer — eine Regel pro finding_type, Urgency-Klassifikation
+# pro classifier_hint.
+#
+# `up_to_date`, `pinned`, `notify_only` haben KEINE Regel — sie werden
+# vom storytelling_adapter direkt verworfen, weil sie kein User-Todo
+# rechtfertigen.
+
+rules:
+  - id: patch_update_urgent
+    description: >
+      Update mit aktiver CVE-Ausnutzung oder hoher CVSS-Severity.
+      Quick-Win: ein winget upgrade reicht meist, Aufwand 1-2 Minuten.
+    match:
+      tool: patch_monitor
+      finding_type: patch_update_urgent
+      min_severity: high
+    classifier_hint:
+      asset_count: 1
+      action_keywords:
+        - update
+        - aktualisieren
+        - patchen
+
+  - id: patch_eol_no_patch
+    description: >
+      Software ist End-of-Life — kein Sicherheits-Patch mehr verfuegbar.
+      Mittel- bis Langfrist-Aktion: Nachfolge-Version evaluieren und
+      Migration planen. KEIN Quick-Win, weil Migration meist
+      Konfigurations-/Schulungs-Aufwand beinhaltet.
+    match:
+      tool: patch_monitor
+      finding_type: patch_eol_no_patch
+      min_severity: medium
+    classifier_hint:
+      asset_count: 3
+      action_keywords:
+        - migriere
+        - ersetze
+        - evaluiere
+
+  - id: patch_workaround_available
+    description: >
+      CVE bekannt, Patch fehlt noch, aber Vendor-Advisory beschreibt
+      einen Workaround (z. B. Feature deaktivieren). Mittel-Aufwand:
+      Workaround anwenden + auf Patch-Release warten.
+    match:
+      tool: patch_monitor
+      finding_type: patch_workaround_available
+      min_severity: medium
+    classifier_hint:
+      asset_count: 1
+      action_keywords:
+        - workaround
+        - mitigation
+        - deaktiviere
+
+  - id: patch_with_csaf_context
+    description: >
+      Patch verfuegbar plus zusaetzlicher CSAF-Kontext vom Hersteller
+      (z. B. spezielle Konfigurationsschritte nach dem Update). Mittel-
+      Aufwand wegen Hersteller-Hinweisen ueber Standard-winget hinaus.
+    match:
+      tool: patch_monitor
+      finding_type: patch_with_csaf_context
+      min_severity: medium
+    classifier_hint:
+      asset_count: 1
+      action_keywords:
+        - update
+        - konfiguriere
+
+  - id: patch_update_available
+    description: >
+      Normales Versions-Update verfuegbar, keine akute Sicherheits-
+      Komponente. Lang-Aufwand: bei Gelegenheit einplanen, kein
+      Sofort-Druck.
+    match:
+      tool: patch_monitor
+      finding_type: patch_update_available
+      min_severity: medium
+    classifier_hint:
+      asset_count: 10
+      action_keywords:
+        - aktualisiere

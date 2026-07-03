@@ -1,0 +1,114 @@
+# Compiled Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Virtuelle Umgebungen
+.venv/
+venv/
+
+# Umgebungsvariablen
+.env
+*.env
+
+# Datenbanken
+*.db
+*.db-wal
+*.db-shm
+*.db-journal
+*.db.plaintext_backup
+*.sqlite
+
+# Claude Code (keine Ausnahme — werden getrackt)
+# ARCHITECTURE.md und CLAUDE.md gehören ins Repo
+
+# Gespeicherte Mappings (können Kundendaten enthalten)
+data/mappings/
+
+# Testdaten
+tests/testdaten/
+
+# PyInstaller Output
+dist/
+build/
+*.spec
+
+# Lokale Build- und Test-Logs (werden separat gesammelt)
+build_log_*.txt
+test_log_*.txt
+
+# system_tuner — Katalog-Signatur-PRIVATKEYS (NIEMALS einchecken! B4-P3)
+# Faengt versehentlich im Repo-Baum erzeugte Privatkeys ab (sign_tuner_catalog.py
+# lehnt Repo-Pfade zwar ab, dies ist die zweite Bremse). Die *.sig (oeffentliche
+# Signatur) wird bewusst getrackt und vom Muster nicht erfasst.
+*signing_key*.b64
+*_signing_key.b64
+
+# finLai Benutzerdaten (lokal, nie im Repo)
+# ~/.finlai/ ist außerhalb des Repos, aber zur Sicherheit:
+.finlai/
+# Maps-Datenbank und Export-Dateien (können Kundendaten enthalten)
+# Pfad: ~/.finlai/maps/maps.db
+maps_exports/
+
+# logdateien
+logs/
+build_log_*.txt
+
+# Claude-Code lokale Arbeitsplanung (nicht fürs Repo)
+.claude/plans/
+# Skills + Agents: Single Source of Truth liegt im Brain (04_skills / 05_agents),
+# verteilt via sync_skills.ps1 (Full-Parity). Repo-Kopien NICHT versionieren.
+.claude/skills/
+.claude/agents/
+.claude/commands/
+# Backup-Kopien des Hook-Installers (apply_hooks.py) — nie ins Repo
+*.hookbak
+# UI-Einstellungen (gerätespezifisch, nicht im Repo)
+ui_settings.json
+
+# KI-Chat-Verläufe (lokale Benutzerdaten, nie im Repo)
+chats/
+
+# Verschlüsselte Übersetzungs-History (lokale Benutzerdaten)
+translations/
+
+# Robotic RPA-Tool (lokale Bot-Daten, Screenshots, Aufzeichnungen)
+bots/
+bot_runs/
+visual_templates/
+bot_screenshots/
+recordings/
+
+# SecureStorage — enthält verschlüsselte API-Keys (NIEMALS einchecken!)
+secure_store.enc
+
+# Kryptografisches Salt — Verlust = Datenverlust (NIEMALS einchecken!)
+.salt
+
+# PyInstaller build specs (source files — nicht Build-Output)
+!build_specs/*.spec
+
+# Font-Download-Archive (Zip-Pakete von Google Fonts etc. — nur TTF/OTF ins Repo)
+assets/fonts/*.zip
+
+# Leere uv.lock im Monorepo-Root (ohne Deps, nur ruff-config)
+/uv.lock
+
+# Lokale Arbeitsdokumente — Strategie-Drafts, Code-Reviews,
+# Pilot-Berichte (nicht fuers Repo).
+docs/analysen/
+docs/CODE_REVIEW_NORISK_*.md
+docs/internal/
+
+# Git-Worktrees (parallele Branches in Unterordnern) — niemals ins Repo
+.worktrees/
+
+# pywinauto-mcp Smoke-Test-Log (lokale Automation-Aufzeichnung)
+pywinauto-mcp.log
+
+# Claude-Code Scheduler-Lock (lokal, vom ScheduleWakeup-Runtime aktualisiert)
+.claude/scheduled_tasks.lock
+
+# graphify Knowledge-Graph (lokales Analyse-Artefakt, nicht versionieren)
+graphify-out/

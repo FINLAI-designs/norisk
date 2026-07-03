@@ -1,0 +1,8 @@
+# Netzwerkmonitor — Manuelle Whitelist (Override, T-340 F-D)
+# Netze hier heben einen Blocklist-/Feed-Treffer wieder auf (gegen False-Positives).
+# Eine Regel pro Zeile. IPv4/IPv6 plain oder CIDR. Gleiches Format wie blocklist.txt.
+# Leer- und Kommentarzeilen (beginnend mit #) werden ignoriert.
+#
+# Beispiele (auskommentiert — Datei ist absichtlich leer):
+#   203.0.113.10         # Eigener VPN-Endpunkt, faelschlich im Feed
+#   10.0.0.0/8           # Internes Netz nie als Bedrohung melden

@@ -1,0 +1,64 @@
+# finLai — Basis-Dependencies (alle drei Apps)
+# Versionen exakt gepinnt (Security-Policy: keine Ranges).
+# Aktualisierungen nur nach expliziter CVE-Prüfung.
+
+# NumPy: <2 erforderlich — numexpr/bottleneck/openpyxl wurden gegen 1.x kompiliert
+# Wird von matplotlib (finLai) und opencv (AUTOMATE) als transitive Dep benötigt
+numpy<2
+
+# HTTP-Client (kompatibel mit ollama>=0.3)
+requests==2.32.5
+
+# Ollama Python-Client (lokales LLM) — ki_integration (alle Apps).
+# Kein Cloud-LLM, kein DeepL: NoRisk ist strikt 100% lokal (ADR-INIT-012).
+ollama>=0.3.0
+
+# Symmetrische Verschlüsselung — SecureStorage und EncryptedDatabase (alle Apps)
+cryptography>=42.0.0
+
+# SQLCipher-Verschlüsselung — alle finLai-DBs (AES-256)
+sqlcipher3==0.6.2
+
+# Alternative SQLCipher-Bindung (Fallback wenn apsw mit SQLCipher kompiliert)
+apsw>=3.43.0
+
+# Versionsvergleiche (PEP 440/508) — Dependency-Auditor + pip intern
+packaging==24.1
+
+# System-Ressourcen-Monitoring (CPU, RAM) — Robotic + allgemein
+psutil==6.1.1
+
+# Windows-DPAPI (CryptProtectData/CryptUnprotectData) — KEK des KeyManagers
+# (core/database/key_manager_platform.py) + Task-Scheduler-COM (win32com.client)
+# fuer den ETW-Collector. Bisher transitiv vorausgesetzt, jetzt explizit gepinnt
+# (Security-Policy: keine Ranges). Nur Windows.
+pywin32==311 ; sys_platform == "win32"
+
+# PDF-Text-Extraktion — teachings (Lernmaterial-Upload)
+pypdf>=4.0.0
+
+# OCR für gescannte PDFs — teachings (Fallback wenn kein direkter Text)
+# Zusätzlich: Tesseract OCR Binary + Sprachpaket "deu" muss installiert sein:
+#   Windows: choco install tesseract  (oder https://github.com/UB-Mannheim/tesseract/wiki)
+#   Linux:   sudo apt install tesseract-ocr tesseract-ocr-deu
+#   Poppler (für pdf2image) — Windows: separat installieren; Linux: apt install poppler-utils
+pytesseract>=0.3.10
+pdf2image>=1.16.0
+
+# Google Material Symbols Icons für PySide6
+qt-material-icons==0.5.0
+
+# Pydantic v2 — JSON-Schema-Validierung für LLM-Pipeline-Outputs (teachings Stage 5a)
+pydantic>=2.7,<3
+
+# === core/security/import_validator — sichere Datei-Importe ===
+# Magika: AI-basierte Dateityp-Erkennung (Spoofing-Schutz) — bringt ONNX-Runtime mit
+magika>=1.0
+# oletools: olevba (Makro-Scan) + msodde (DDE-Scan) für XLSX-Sub-Validator
+oletools>=0.60
+# JSON-Schema-Validierung (Draft 2020-12) — json_validator
+jsonschema>=4.0
+# Streaming-JSON-Parser für Tiefen- und Größen-Guards — json_validator
+ijson>=3.0
+# Unicode-Normalisierung (Homoglyph-Heuristik) — txt_validator
+ftfy>=6.0

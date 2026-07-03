@@ -1,0 +1,31 @@
+# Sprint S2a — Regeln fuer api_security.
+
+rules:
+  - id: api_missing_security_header
+    description: >
+      Webschnittstelle ohne empfohlenen Sicherheits-Header (CSP, HSTS,
+      X-Frame-Options ...). Quick-Win bei einer Domain, idempotent.
+    match:
+      tool: api_security
+      finding_type: missing_security_header
+      min_severity: low
+    classifier_hint:
+      asset_count: 1
+      action_keywords:
+        - set header
+        - update
+
+  - id: api_weak_auth
+    description: >
+      Authentifizierung der API ist schwach (Basic Auth ueber HTTP, keine
+      Rate-Limits, weak JWT). Mittel — meist mehrere Endpunkte / Test-
+      und Wartungsfenster noetig.
+    match:
+      tool: api_security
+      finding_type: weak_authentication
+      min_severity: medium
+    classifier_hint:
+      asset_count: 4
+      action_keywords:
+        - migriere
+        - rolle aus

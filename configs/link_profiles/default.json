@@ -1,0 +1,72 @@
+{
+  "profile_id": "default",
+  "description": "Standard-Link-Profil für AUTOMATE by FINLAI (TaxTech / Österreich)",
+  "groups": [
+    {
+      "label": "Behörden & Portale",
+      "icon": "account_balance",
+      "links": [
+        {
+          "label": "FinanzOnline",
+          "url": "https://finanzonline.bmf.gv.at",
+          "icon": "language",
+          "description": "BMF Steuerportal — Steuererklärungen, Bescheide, Rückzahlungen"
+        },
+        {
+          "label": "Bundesministerium für Finanzen",
+          "url": "https://www.bmf.gv.at",
+          "icon": "account_balance",
+          "description": "Offizielle Website des Bundesministeriums für Finanzen"
+        },
+        {
+          "label": "WKO — Wirtschaftskammer Österreich",
+          "url": "https://www.wko.at",
+          "icon": "business",
+          "description": "WKO — Informationen für Unternehmen, Gründer und Selbstständige"
+        },
+        {
+          "label": "Statistik Austria",
+          "url": "https://www.statistik.at",
+          "icon": "bar_chart",
+          "description": "Statistische Daten für Österreich — Wirtschaft, Bevölkerung, Finanzen"
+        }
+      ]
+    },
+    {
+      "label": "Steuer & Recht",
+      "icon": "gavel",
+      "links": [
+        {
+          "label": "RIS — Rechtsinformationssystem",
+          "url": "https://www.ris.bka.gv.at",
+          "icon": "menu_book",
+          "description": "Bundesgesetzblatt, Gerichtsurteile, Verwaltungsvorschriften"
+        },
+        {
+          "label": "Kammer der Steuerberater:innen",
+          "url": "https://www.ksteu.at",
+          "icon": "groups",
+          "description": "Kammer der Steuerberater:innen und Wirtschaftsprüfer:innen"
+        }
+      ]
+    },
+    {
+      "label": "Daten & Standards",
+      "icon": "storage",
+      "links": [
+        {
+          "label": "XBRL Austria",
+          "url": "https://www.xbrl.at",
+          "icon": "code",
+          "description": "XBRL-Standard für strukturierte Finanzberichterstattung in Österreich"
+        },
+        {
+          "label": "OGD Österreich",
+          "url": "https://www.data.gv.at",
+          "icon": "dataset",
+          "description": "Open Government Data — offene Behördendaten Österreichs"
+        }
+      ]
+    }
+  ]
+}

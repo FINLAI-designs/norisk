@@ -1,0 +1,44 @@
+# T-098c-ii — Regeln fuer supply_chain_monitor Findings (AVV-Renewal).
+#
+# Hintergrund: Iter 2c-i bringt den AVV-Tracker mit Renewal-Status
+# (OK / EXPIRING_SOON / OVERDUE). Diese YAML verbindet die zwei
+# actionable Status mit dem mainpage-KI-Todo-Layer — so taucht ein
+# "AVV mit Hetzner laeuft in 27 Tagen ab" automatisch als Welcome-
+# Page-Task auf.
+#
+# OK-Status hat KEINE Regel — er wird vom storytelling_adapter direkt
+# verworfen (keine User-Aktion noetig).
+
+rules:
+  - id: avv_renewal_overdue
+    description: >
+      AVV (Auftragsverarbeitungsvertrag) ist abgelaufen — fehlende
+      Vertragsgrundlage fuer die Auftragsverarbeitung nach DSGVO Art. 28.
+      Akute Compliance-Luecke: ohne aktiven AVV droht ein DSGVO-Verstoss
+      bei Mandantendaten-Verarbeitung durch diesen Vendor.
+    match:
+      tool: supply_chain_monitor
+      finding_type: avv_renewal_overdue
+      min_severity: high
+    classifier_hint:
+      asset_count: 1
+      action_keywords:
+        - verlaengern
+        - neu_abschliessen
+        - vendor_kontaktieren
+
+  - id: avv_renewal_soon
+    description: >
+      AVV laeuft in den naechsten 90 Tagen ab — proaktive Verlaengerung
+      einleiten. Mittel-Aufwand: Vendor kontaktieren, Vertragsentwurf
+      pruefen, unterschreiben.
+    match:
+      tool: supply_chain_monitor
+      finding_type: avv_renewal_soon
+      min_severity: medium
+    classifier_hint:
+      asset_count: 3
+      action_keywords:
+        - verlaengern
+        - vendor_kontaktieren
+        - vertrag_pruefen

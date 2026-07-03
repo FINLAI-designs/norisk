@@ -1,0 +1,36 @@
+repos:
+  - repo: local
+    hooks:
+
+      - id: ruff-check
+        name: "🔍 ruff — Linting"
+        entry: ruff check --fix
+        language: system
+        types: [python]
+        pass_filenames: true
+        stages: [pre-commit]
+
+      - id: ruff-format
+        name: "✨ ruff — Formatierung"
+        entry: ruff format --check
+        language: system
+        types: [python]
+        pass_filenames: true
+        stages: [pre-commit]
+
+      - id: bandit
+        name: "🔒 bandit — Security"
+        entry: bandit -r -ll
+        language: system
+        types: [python]
+        exclude: "^tests/"
+        pass_filenames: true
+        stages: [pre-commit]
+
+      - id: smoke-push
+        name: "🚀 smoke — Import-Check (< 10s)"
+        entry: python -c "import core; import apps.app_config; print('  imports OK')"
+        language: system
+        pass_filenames: false
+        always_run: true
+        stages: [pre-push]

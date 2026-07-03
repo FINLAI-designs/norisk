@@ -1,0 +1,8 @@
+# graphify exclude (gitignore-Syntax). Schlanker Code-Navigations-Graph.
+# Eingecheckt = geteilte Build-Konfig, konsistente Graphen im Team.
+tests/
+docs/
+resources/
+.claude/
+.import_linter_cache/
+*cache*/

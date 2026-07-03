@@ -1,0 +1,100 @@
+# NoRisk by FINLAI — Konsolidierte Entwicklungs-Dependencies
+# Pilot-Repo der App-Trennung (2026-04-25). Schmaler als die
+# ursprüngliche finlai_app/requirements.txt — Finance- und Robotic-Deps
+# wurden entfernt.
+#
+# T-356 (2026-06-12): ALLE direkten Dependencies exakt gepinnt (==) auf
+# die in der Projekt-venv installierten Versionen. Grund: Der
+# Dependency-Auditor kann unpinned Ranges nicht gegen OSV-Advisories
+# abgleichen (Score-Inflation, z.B. 24 falsche pypdf-Findings).
+# Aktualisierungen nur bewusst: Version in der venv heben, dann Pin hier.
+#
+# Install:
+#   python -m venv .venv
+#   .venv/Scripts/python -m pip install -r requirements.txt
+
+# === GUI-Framework ===
+# PySide6 fest gepinnt (Migration C-3 Anaconda->Standalone, 2026-04-27).
+# Range war urspruenglich >=6.7.0 -- bei Re-Install zog pip die jeweils neueste
+# Version, was bei Anaconda-Base zu DLL-Hijacking fuehrte (siehe
+# docs/DLL_PROBLEM_ANALYSE_2026-04-27.md). Mit Standalone-Python-venv und
+# festem 6.11.0-Pin reproduzierbar.
+PySide6==6.11.0
+qt-material-icons==0.5.0
+
+# === Charting (UI-Visualisierungs-Sprint T-203, 2026-05-26) ===
+# PyQtGraph fuer Live-Daten (Light-SIEM Stacked-Area, ggf. Folge-Charts).
+# QtCharts wurde explizit verworfen (GPL/commercial inkompatibel mit
+# unserer Closed-Source-Lizenz). PyQtGraph ist LGPL, pure Python, nutzt
+# bereits vorhandenes NumPy — kein neuer DLL-Footprint, kein Hidden-Import
+# im PyInstaller-Spec noetig (statischer Import; pyinstaller-hooks-contrib
+# liefert Standard-Hook).
+pyqtgraph==0.13.7
+
+# === Basis (alle Apps brauchen das) ===
+numpy==1.26.4                  # transitive für openpyxl-/pandas-Tools, kompiliert gegen 1.x (<2 Pflicht)
+requests==2.33.1
+httpx==0.27.2                  # HTTP-Client (Ollama-Provider, Web-Fetch, MS-Defender-Wrapper, ...)
+ollama==0.6.1
+cryptography==45.0.7
+bcrypt==5.0.0                  # core/auth Passwort-Hashing
+sqlcipher3==0.6.2
+apsw==3.53.0.0                 # Fallback-SQLCipher-Bindung
+packaging==26.2                # T-356: Pin von 24.1 auf installierte 26.2 korrigiert
+psutil==6.1.1
+pydantic==2.9.2
+pydantic-settings==2.4.0        # core/settings.py — Env-Var-Overrides + Validation (T-023)
+
+# pywin32 mit sys_platform-Marker — wird auf Linux/macOS NICHT installiert.
+# Linux-CI muss daher einen Skip-Mechanismus haben, nicht einen Failure.
+# Linux-Smoke-Workflow ist Subtask-6-Backlog (siehe ADR-007 §7).
+# Bei NEUEN pywin32-Imports in Folge-Subtasks: STOP, melden — sonst
+# wird die Linux-Annahme verletzt.
+pywin32==311; sys_platform == "win32"  # DPAPI-KEK in core/database/key_manager.py (ADR-007)
+
+# T-075 Network-Anomaly: ETW-Kernel-Network-Provider fuer Per-Prozess-Bytes.
+# Win-only (sys_platform-Marker, Linux-CI ueberspringt). Admin-pflichtig zur
+# Laufzeit (Kernel-Provider). Patrick-Freigabe 2026-05-25 (Stop-Step 0).
+pywintrace==0.2.0; sys_platform == "win32"  # ETW-Subscriber in tools/network_monitor (T-075)
+
+# === Datei-/Dokument-Verarbeitung ===
+pypdf==6.10.2                  # PDF-Text-Extraktion (pdf_risk_scanner)
+python-docx==1.2.0             # DOCX-Reports
+openpyxl==3.1.5                # XLSX-Export (api_security u.a.)
+reportlab==4.4.10              # PDF-Generierung (NoRisk Reports)
+defusedxml==0.7.1              # Sichere XML-Parser (gegen XXE)
+lxml==6.1.0                    # XSD-Parsing
+
+# === Security/Validator (core/security) ===
+magika==1.0.2                  # AI-Dateityp-Erkennung
+oletools==0.60.2               # olevba + msodde (Makro/DDE-Detection)
+yara-python==4.5.4             # YARA-Pattern-Scanner (Document Scanner Iter 3, T-094)
+dnspython==2.8.0               # DNS-MX-Lookup (Datensouveraenitaets-Audit, T-097b)
+jsonschema==4.26.0
+ijson==3.5.0                   # Streaming-JSON
+ftfy==6.3.1                    # Unicode-Normalisierung
+extract-msg==0.55.0            # Outlook .msg-Parsing (email_scanner)
+feedparser==6.0.12             # RSS/Atom-Feeds (consumer_feeds)
+chardet==5.2.0                 # Zeichensatz-Erkennung
+beautifulsoup4==4.13.5         # HTML-Parsing
+
+# === NoRisk-spezifisch ===
+ddgs==9.14.1                   # DuckDuckGo-Search (CVE-/OSINT-Tools)
+
+# === tools/handbuch_assistent (Optional-Dependencies, lazy import) ===
+# Beide Dependencies sind als ImportError-tolerante lazy imports im
+# Code (chunk_indexer.py:70, handbuch_service.py:297-298). Fehlt eine,
+# läuft die App weiter — nur RAG-Index bzw. Auto-Index-Rebuild ist
+# deaktiviert. Hier explizit aufgelistet, damit ein frischer venv-
+# Install volle Funktionalität liefert.
+scikit-learn==1.8.0            # tools/handbuch_assistent (TF-IDF + Cosine via sklearn)
+watchdog==6.0.0                # tools/handbuch_assistent (docs/-Auto-Reload-Watcher)
+
+# === Build & Dev Tools ===
+bandit==1.9.4
+import-linter==2.11             # Architektur-Contract-Enforcement (T-026)
+pyinstaller==6.20.0
+pyinstaller-hooks-contrib==2026.4
+pytest==9.0.3
+pytest-qt==4.5.0
+ruff==0.15.12
